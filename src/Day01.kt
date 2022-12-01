@@ -2,50 +2,38 @@ import java.util.Collections
 import java.util.PriorityQueue
 
 fun main() {
-    fun part1(input: List<String>): Int {
-        var maxCalouries = 0
-        var currentElfCalories = 0
-
-        for(line in input) {
-            if(line.isEmpty()) {
-                maxCalouries = maxOf(maxCalouries, currentElfCalories)
-                currentElfCalories = 0
-                continue
+    fun getCaloriesPerElf(input: List<String>): List<Int> {
+        val caloriesPerElf = input.fold(mutableListOf(mutableListOf<Int>())) { acc, calories ->
+            if (calories.isEmpty()) {
+                acc.add(mutableListOf<Int>())
+            } else {
+                acc.last().add(calories.toInt())
             }
 
-            currentElfCalories += line.toInt()
+            acc
         }
 
-        if(currentElfCalories != 0) {
-            maxCalouries = maxOf(maxCalouries, currentElfCalories)
-        }
+        return caloriesPerElf.map { it.sum() }
+    }
 
-        return maxCalouries
+    fun part1(input: List<String>): Int {
+        val caloriesPerElf = getCaloriesPerElf(input)
+
+        return caloriesPerElf.max()
     }
 
     fun part2(input: List<String>): Int {
-        var currentElfCalories = 0
         val calories = PriorityQueue<Int>(Collections.reverseOrder())
 
-        for(line in input) {
-            if(line.isEmpty()) {
-                calories.add(currentElfCalories)
-                currentElfCalories = 0
-                continue
-            }
-
-            currentElfCalories += line.toInt()
-        }
-
-        if(currentElfCalories != 0) {
-            calories.add(currentElfCalories)
+        getCaloriesPerElf(input).forEach {
+            calories.add(it)
         }
 
         var totalCalories = 0
         var numberOfElfs = 3
-        while(calories.size > 0 && numberOfElfs > 0) {
-            totalCalories = totalCalories + calories.poll()
-            numberOfElfs = numberOfElfs - 1
+        while (calories.size > 0 && numberOfElfs > 0) {
+            totalCalories += calories.poll()
+            numberOfElfs -= 1
         }
 
         return totalCalories
