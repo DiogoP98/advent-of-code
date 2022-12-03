@@ -9,7 +9,7 @@ repositories {
 }
 
 application {
-    mainClassName = "Day02Kt"
+    mainClassName = "Day03Kt"
 }
 
 tasks {
