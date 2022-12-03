@@ -2,22 +2,22 @@ fun main() {
     val WIN_SCORE = 6
     val DRAW_SCORE = 3
 
-    val opponentPlayMapping = mapOf<String, String>(
+    val opponentPlayMapping = mapOf(
         "A" to "rock",
         "B" to "paper",
         "C" to "scissors"
     )
-    val playerPlayMapping = mapOf<String, String>(
+    val playerPlayMapping = mapOf(
         "X" to "rock",
         "Y" to "paper",
         "Z" to "scissors"
     )
-    val winPlay = mapOf<String, String>(
+    val winPlay = mapOf(
         "scissors" to "rock",
         "paper" to "scissors",
         "rock" to "paper"
     )
-    val playScores = mapOf<String, Int>(
+    val playScores = mapOf(
         "rock" to 1,
         "paper" to 2,
         "scissors" to 3

@@ -1,46 +1,32 @@
 fun main() {
     fun part1(input: List<String>): Int =
         input.fold(0) { sum, rucksack ->
-            val setOfItems = mutableSetOf<Char>()
             val splitIndex = rucksack.length / 2
+            val setOfItems = rucksack.substring(0, splitIndex).toList().toSet()
 
-            for (position in 0 until splitIndex) {
-                setOfItems.add(rucksack.get(position))
-            }
+            val item = rucksack.substring(splitIndex).first { item -> setOfItems.contains(item) }
 
-            var priority = 0
-
-            for (position in splitIndex until rucksack.length) {
-                val item = rucksack.get(position)
-
-                if (setOfItems.contains(item)) {
-                    priority = getPriority(item)
-                    break
-                }
-            }
-
-            sum + priority
+            sum + getPriority(item)
         }
 
     fun part2(input: List<String>): Int {
-        val badges =
-            input
-                .windowed(size = 3, step = 3)
-                .fold(listOf<Char>()) { badges, group ->
-                    val items = mutableMapOf<Char, Int>()
+        val badges = input
+            .windowed(size = 3, step = 3)
+            .fold(listOf<Char>()) { badges, group ->
+                val items = mutableMapOf<Char, Int>()
 
-                    group.forEach { rucksack ->
-                        val distinctItems = rucksack.toList().distinct()
+                group.forEach { rucksack ->
+                    val distinctItems = rucksack.toList().distinct()
 
-                        distinctItems.forEach { item ->
-                            items.put(item, items.getOrDefault(item, 0) + 1)
-                        }
+                    distinctItems.forEach { item ->
+                        items[item] = items.getOrDefault(item, 0) + 1
                     }
-
-                    val badgeItem = items.filterValues { it == 3 }.keys.first()
-
-                    badges + badgeItem
                 }
+
+                val badgeItem = items.filterValues { it == 3 }.keys.first()
+
+                badges + badgeItem
+            }
 
         return badges.sumOf(::getPriority)
     }
