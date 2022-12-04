@@ -1,5 +1,5 @@
-import java.lang.Integer.max
-import java.lang.Integer.min
+import kotlin.math.max
+import kotlin.math.min
 
 fun main() {
     fun part1(input: List<String>): Int =
@@ -23,14 +23,14 @@ fun main() {
 
 private fun getAssignments(
     input: List<String>,
-    overlappingFunction: (assignment1: Pair<Int, Int>, assignment2: Pair<Int, Int>) -> Boolean
+    overlap: (assignment1: Pair<Int, Int>, assignment2: Pair<Int, Int>) -> Boolean
 ) =
     input.fold(0) { fullyContainedPairs, pair ->
         fullyContainedPairs + pair.split(",").let { assignments ->
             val assignment1 = getAssignedRange(assignments[0])
             val assignment2 = getAssignedRange(assignments[1])
 
-            if (overlappingFunction(assignment1, assignment2)) {
+            if (overlap(assignment1, assignment2)) {
                 1
             } else {
                 0
