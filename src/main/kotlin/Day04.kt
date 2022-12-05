@@ -23,7 +23,7 @@ fun main() {
 
 private fun getAssignments(
     input: List<String>,
-    overlap: (assignment1: Pair<Int, Int>, assignment2: Pair<Int, Int>) -> Boolean
+    overlap: (Pair<Int, Int>, Pair<Int, Int>) -> Boolean
 ) =
     input.fold(0) { fullyContainedPairs, pair ->
         fullyContainedPairs + pair.split(",").let { assignments ->
