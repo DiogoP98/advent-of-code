@@ -15,7 +15,6 @@ fun main() {
 private fun getStreamMarker(datastream: String, streamLength: Int): Int {
     val stream = mutableMapOf<Char, Int>()
     var streamStart = 0
-    var markerIndex = -1
 
     datastream.forEachIndexed { index, character ->
         if (characterInCurrentStream(stream, streamStart, character)) {
@@ -25,12 +24,11 @@ private fun getStreamMarker(datastream: String, streamLength: Int): Int {
         stream[character] = index
 
         if (getStreamLength(streamStart, index) == streamLength) {
-            markerIndex = index + 1
-            return markerIndex
+            return index + 1
         }
     }
 
-    return markerIndex
+    return -1
 }
 
 private fun characterInCurrentStream(stream: Map<Char, Int>, streamStart: Int, character: Char) =
