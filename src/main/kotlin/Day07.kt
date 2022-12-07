@@ -2,130 +2,24 @@ import java.util.Stack
 
 fun main() {
     fun part1(input: List<String>): Int {
-        val currentDir = Stack<String>()
-        var currentDirPath = ""
-        val directories = mutableMapOf<String, String>()
+        val directories = retrieveDirectoryMapping(input)
 
-        var index = 0
+        val directoriesSizes = mutableMapOf<String, Int>()
+        calculateDirectorySize(directories, "/", directoriesSizes)
 
-        while(index < input.size) {
-            val line = input[index]
-
-            if(line.startsWith("$")) {
-                val commandRegex = "[\\w/\\d{..}]+".toRegex()
-
-                val fullCommand = commandRegex.findAll(line).map { it.value }.toList()
-                val command = fullCommand[0]
-
-                if (command == "cd") {
-                    val path = fullCommand[1]
-                    if(path == "..") {
-                        currentDir.pop()
-                        currentDirPath = currentDirPath.split("|").dropLast(1).joinToString(separator = "|")
-                    } else {
-                        currentDir.push(path)
-                        currentDirPath = if(currentDirPath == "") path else "${currentDirPath}|${path}"
-                    }
-
-                    index += 1
-                } else if(command == "ls") {
-                    while(index < input.size - 1) {
-                        index += 1
-
-                        if(input[index].startsWith("$")) {
-                            break
-                        }
-
-                        if(input[index].startsWith("dir")) {
-                            val commandRegex = "[\\w]+".toRegex()
-
-                            val lsDir = commandRegex.findAll(input[index]).map { it.value }.toList()[1]
-
-                            directories[currentDirPath] = if(directories.contains(currentDirPath)) directories.getValue(currentDirPath) + "|${lsDir}" else "${lsDir}"
-                        } else {
-                            val lsRegex = "\\d+".toRegex()
-
-                            val size = lsRegex.findAll(input[index]).map { it.value }.toList()[0]
-
-                            directories[currentDirPath] = if(directories.contains(currentDirPath)) directories.getValue(currentDirPath) + "|${size}" else "${size}"
-                        }
-                    }
-                }
-            } else {
-                index += 1
-            }
-        }
-
-        val directoriesSize = mutableMapOf<String, Int>()
-
-        calculateSize(directories, directoriesSize, "/")
-
-        return directoriesSize.values.filter { it <= 100000 }.sum()
+        return directoriesSizes.values.filter { it <= 100000 }.sum()
     }
 
     fun part2(input: List<String>): Int {
-        val currentDir = Stack<String>()
-        var currentDirPath = ""
-        val directories = mutableMapOf<String, String>()
+        val directories = retrieveDirectoryMapping(input)
 
-        var index = 0
+        val directoriesSizes = mutableMapOf<String, Int>()
+        calculateDirectorySize(directories, "/", directoriesSizes)
 
-        while(index < input.size) {
-            val line = input[index]
-
-            if(line.startsWith("$")) {
-                val commandRegex = "[\\w/\\d{..}]+".toRegex()
-
-                val fullCommand = commandRegex.findAll(line).map { it.value }.toList()
-                val command = fullCommand[0]
-
-                if (command == "cd") {
-                    val path = fullCommand[1]
-                    if(path == "..") {
-                        currentDir.pop()
-                        currentDirPath = currentDirPath.split("|").dropLast(1).joinToString(separator = "|")
-                    } else {
-                        currentDir.push(path)
-                        currentDirPath = if(currentDirPath == "") path else "${currentDirPath}|${path}"
-                    }
-
-                    index += 1
-                } else if(command == "ls") {
-                    while(index < input.size - 1) {
-                        index += 1
-
-                        if(input[index].startsWith("$")) {
-                            break
-                        }
-
-                        if(input[index].startsWith("dir")) {
-                            val commandRegex = "[\\w]+".toRegex()
-
-                            val lsDir = commandRegex.findAll(input[index]).map { it.value }.toList()[1]
-
-                            directories[currentDirPath] = if(directories.contains(currentDirPath)) directories.getValue(currentDirPath) + "|${lsDir}" else "${lsDir}"
-                        } else {
-                            val lsRegex = "\\d+".toRegex()
-
-                            val size = lsRegex.findAll(input[index]).map { it.value }.toList()[0]
-
-                            directories[currentDirPath] = if(directories.contains(currentDirPath)) directories.getValue(currentDirPath) + "|${size}" else "${size}"
-                        }
-                    }
-                }
-            } else {
-                index += 1
-            }
-        }
-
-        val directoriesSize = mutableMapOf<String, Int>()
-
-        calculateSize(directories, directoriesSize, "/")
-
-        val spaceLeft = 70000000 - directoriesSize.getValue("/")
+        val spaceLeft = 70000000 - directoriesSizes.getValue("/")
         val neededSpace = 30000000 - spaceLeft
 
-        return directoriesSize.values.filter { it >= neededSpace }.min()
+        return directoriesSizes.values.filter { it >= neededSpace }.min()
     }
 
     val testInput = readInput("Day07_test")
@@ -137,22 +31,61 @@ fun main() {
     println(part2(input))
 }
 
-private fun calculateSize(directories: Map<String, String>, directoriesSize: MutableMap<String, Int>, key: String): Int {
-    if(directoriesSize.containsKey(key)) {
-         return directoriesSize.getValue(key)
-    }
+private fun retrieveDirectoryMapping(input: List<String>): Map<String, Pair<Int, String>> {
+    val currentDir = Stack<String>()
+    var currentDirPath = ""
 
-    directories.getValue(key).split("|").forEach {
-        if(it.matches("\\d+".toRegex())) {
-            directoriesSize[key] = directoriesSize.getOrDefault(key, 0) + it.toInt()
-        } else {
-            if(directoriesSize.contains("${key}|${it}")) {
-                directoriesSize[key] = directoriesSize.getOrDefault(key, 0) + directoriesSize.getValue("${key}|${it}")
+    return mutableMapOf<String, Pair<Int, String>>().apply {
+        input.forEach { line ->
+            if (line == "ls") {
+                return@forEach
+            }
+
+            if (line.startsWith("$")) {
+                val fullCommand = line.getValuesMatchingRegex("[\\w/\\d{..}]+".toRegex())
+                val command = fullCommand[0]
+
+                if (command == "cd") {
+                    val path = fullCommand[1]
+
+                    currentDirPath = updateCurrentDir(currentDir, currentDirPath, path)
+                }
             } else {
-                directoriesSize[key] = directoriesSize.getOrDefault(key, 0) + calculateSize(directories, directoriesSize, "${key}|${it}")
+                this[currentDirPath] = updateCurrentDirContent(this.getOrDefault(currentDirPath, Pair(0, "")), line)
             }
         }
     }
-
-    return directoriesSize.getValue(key)
 }
+
+private fun updateCurrentDir(currentDir: Stack<String>, currentDirPath: String, path: String): String {
+    if (path == "..") {
+        currentDir.pop()
+
+        return currentDirPath.split("|").dropLast(1).joinToString(separator = "|")
+    } else {
+        currentDir.push(path)
+
+        return if (currentDirPath.isEmpty()) path else "$currentDirPath|$path"
+    }
+}
+
+private fun updateCurrentDirContent(currentDirContent: Pair<Int, String>, contentLine: String): Pair<Int, String> {
+    if (contentLine.startsWith("dir")) {
+        val dir = contentLine.getValuesMatchingRegex("[\\w]+".toRegex())[1]
+
+        return currentDirContent.copy(second = "${currentDirContent.second}|$dir")
+    } else {
+        val size = contentLine.getValuesMatchingRegex("\\d+".toRegex())[0].toInt()
+
+        return currentDirContent.copy(first = currentDirContent.first + size)
+    }
+}
+
+private fun calculateDirectorySize(directories: Map<String, Pair<Int, String>>, path: String, directoriesSizes: MutableMap<String, Int>): Int =
+    with(directories.getValue(path)) {
+        second.split("|").drop(1).fold(first) { acc, value ->
+            acc + calculateDirectorySize(directories, "$path|$value", directoriesSizes)
+        }.also { size ->
+            directoriesSizes[path] = size
+        }
+    }

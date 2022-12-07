@@ -14,3 +14,10 @@ fun readInput(name: String) = File("src/resources", "$name.txt")
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
     .toString(16)
     .padStart(32, '0')
+
+/**
+* Retrive matcing patterns in String
+*/
+fun String.getValuesMatchingRegex(regex: Regex) = regex.findAll(this)
+    .map { match -> match.value }
+    .toList()
