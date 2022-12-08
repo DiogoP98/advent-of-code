@@ -16,7 +16,7 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
     .padStart(32, '0')
 
 /**
-* Retrive matcing patterns in String
+* Retrieve matching patterns in String
 */
 fun String.getValuesMatchingRegex(regex: Regex) = regex.findAll(this)
     .map { match -> match.value }
