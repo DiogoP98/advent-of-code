@@ -2,49 +2,9 @@ import kotlin.math.abs
 import kotlin.math.sign
 
 fun main() {
-    fun part1(input: List<String>): Int {
-        var tailCurrentPosition = Pair(0, 0)
-        val ropePositions = mutableSetOf(tailCurrentPosition)
+    fun part1(input: List<String>): Int = retrieveUniquePositions(input, 2)
 
-        executeMotions(input) { headCurrentPosition ->
-            if (tailCurrentPosition.touching(headCurrentPosition)) {
-                return@executeMotions
-            }
-
-            tailCurrentPosition = tailCurrentPosition.closeUp(headCurrentPosition)
-
-            ropePositions.add(tailCurrentPosition)
-        }
-
-        return ropePositions.size
-    }
-
-    fun part2(input: List<String>): Int {
-        val tailCurrentPosition = MutableList(9) { Pair(0, 0) }
-        val ropePositions = mutableSetOf(Pair(0, 0))
-
-        executeMotions(input) { headCurrentPosition ->
-            tailCurrentPosition.forEachIndexed { index, position ->
-                if (index == 0) {
-                    if (position.touching(headCurrentPosition)) {
-                        return@executeMotions
-                    }
-
-                    tailCurrentPosition[index] = position.closeUp(headCurrentPosition)
-                } else {
-                    with(tailCurrentPosition[index - 1]) {
-                        if (!position.touching(this)) {
-                            tailCurrentPosition[index] = position.closeUp(this)
-                        }
-                    }
-                }
-            }
-
-            ropePositions.add(tailCurrentPosition[8])
-        }
-
-        return ropePositions.size
-    }
+    fun part2(input: List<String>): Int = retrieveUniquePositions(input, 10)
 
     val testInput = readInput("Day09_test")
     check(part1(testInput) == 88)
@@ -55,7 +15,7 @@ fun main() {
     println(part2(input))
 }
 
-private fun executeMotions(input: List<String>, moveTail: (Pair<Int, Int>) -> Unit) {
+private fun retrieveUniquePositions(input: List<String>, knots: Int): Int {
     val directionMapping = mapOf(
         'R' to Pair(0, 1),
         'L' to Pair(0, -1),
@@ -63,18 +23,34 @@ private fun executeMotions(input: List<String>, moveTail: (Pair<Int, Int>) -> Un
         'D' to Pair(1, 0)
     )
 
-    var headCurrentPosition = Pair(0, 0)
+    val rope = MutableList(knots) { Pair(0, 0) }
+    val head = 0
+    val tail = knots - 1
+    val ropeTailPositions = mutableSetOf(rope[tail])
 
     input.forEach { action ->
         val direction = directionMapping.getValue(action[0])
         val steps = action.getValuesMatchingRegex("\\d+".toRegex())[0].toInt()
 
         repeat(steps) {
-            headCurrentPosition = headCurrentPosition.move(direction)
+            rope[head] = rope[head].move(direction)
 
-            moveTail(headCurrentPosition)
+            for (position in 1 until knots) {
+                val previousKnotPosition = rope[position - 1]
+                val currentKnowPosition = rope[position]
+
+                if (currentKnowPosition.touching(previousKnotPosition)) {
+                    break
+                }
+
+                rope[position] = currentKnowPosition.closeUp(previousKnotPosition)
+            }
+
+            ropeTailPositions.add(rope[tail])
         }
     }
+
+    return ropeTailPositions.size
 }
 
 private fun Pair<Int, Int>.move(direction: Pair<Int, Int>) = Pair(first + direction.first, second + direction.second)
