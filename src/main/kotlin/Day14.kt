@@ -6,117 +6,19 @@ import kotlin.math.min
 data class Point(
     val x: Int,
     val y: Int
-) {
-    companion object {
-        fun fromString(pointString: String): Point {
-            val (y, x) = pointString.split(",").map { it.trim().toInt() }
-
-            return Point(x, y)
-        }
-    }
-}
+)
 
 fun main() {
     fun part1(input: List<String>): Int {
-        var minWidth = 500
-        var maxWidth = 500
-        var maxHeight = 0
+        val (blockedPoints, maxHeight) = retrieveBlockedPoints(input)
 
-        input.forEach { line ->
-            val points = line.split("->").map { Point.fromString(it) }
-
-            points.forEach { point: Point ->
-                minWidth = min(minWidth, point.y)
-                maxWidth = max(maxWidth, point.y)
-
-                maxHeight = max(maxHeight, point.x)
-            }
-        }
-
-        val cave = MutableList(maxHeight + 1) { MutableList(maxWidth - minWidth + 1) { '.' } }
-
-        input.forEach { line ->
-            val points = line.split("->").map { Point.fromString(it) }
-
-            var currentPoint = points.first()
-
-            points.drop(1).forEach { point: Point ->
-                if (currentPoint.x == point.x) {
-                    val startingColumn = min(currentPoint.y, point.y)
-                    val endColumn = max(currentPoint.y, point.y)
-                    for (column in startingColumn..endColumn) {
-                        cave[currentPoint.x][column - minWidth] = '#'
-                    }
-                } else {
-                    val startingRow = min(currentPoint.x, point.x)
-                    val endRow = max(currentPoint.x, point.x)
-                    for (row in startingRow..endRow) {
-                        cave[row][currentPoint.y - minWidth] = '#'
-                    }
-                }
-
-                currentPoint = point
-            }
-        }
-
-        val sandPouringPoint = Point(0, 500 - minWidth)
-        val possibleMoves = listOf(Pair(1, 0), Pair(1, -1), Pair(1, 1))
-
-        return retriveCount(cave, possibleMoves, sandPouringPoint)
+        return retriveCount(blockedPoints, maxHeight, true)
     }
 
     fun part2(input: List<String>): Int {
-        var minWidth = 500
-        var maxWidth = 500
-        var maxHeight = 0
+        val (blockedPoints, maxHeight) = retrieveBlockedPoints(input)
 
-        input.forEach { line ->
-            val points = line.split("->").map { Point.fromString(it) }
-
-            points.forEach { point: Point ->
-                minWidth = min(minWidth, point.y)
-                maxWidth = max(maxWidth, point.y)
-
-                maxHeight = max(maxHeight, point.x)
-            }
-        }
-
-        minWidth = minWidth - maxHeight
-        maxWidth = maxWidth + maxHeight
-        val cave = MutableList(maxHeight + 3) { MutableList(maxWidth - minWidth + 1) { '.' } }
-
-        for (index in minWidth..maxWidth) {
-            cave[maxHeight + 2][index - minWidth] = '#'
-        }
-
-        input.forEach { line ->
-            val points = line.split("->").map { Point.fromString(it) }
-
-            var currentPoint = points.first()
-
-            points.drop(1).forEach { point: Point ->
-                if (currentPoint.x == point.x) {
-                    val startingColumn = min(currentPoint.y, point.y)
-                    val endColumn = max(currentPoint.y, point.y)
-                    for (column in startingColumn..endColumn) {
-                        cave[currentPoint.x][column - minWidth] = '#'
-                    }
-                } else {
-                    val startingRow = min(currentPoint.x, point.x)
-                    val endRow = max(currentPoint.x, point.x)
-                    for (row in startingRow..endRow) {
-                        cave[row][currentPoint.y - minWidth] = '#'
-                    }
-                }
-
-                currentPoint = point
-            }
-        }
-
-        val sandPouringPoint = Point(0, 500 - minWidth)
-        val possibleMoves = listOf(Pair(1, 0), Pair(1, -1), Pair(1, 1))
-
-        return retriveCount(cave, possibleMoves, sandPouringPoint)
+        return retriveCount(blockedPoints, maxHeight + 2, false)
     }
 
     val testInput = readInput("Day14_test")
@@ -128,23 +30,62 @@ fun main() {
     println(part2(input))
 }
 
-private fun retriveCount(cave: MutableList<MutableList<Char>>, possibleMoves: List<Pair<Int, Int>>, sandPouringPoint: Point): Int {
-    var moveOutcome: Int
-    var standingSand = 0
+private fun retrieveBlockedPoints(input: List<String>): Pair<MutableSet<Point>, Int> {
+    val blockedPoints = mutableSetOf<Point>()
+    var maxHeight = 0
+
+    input.forEach { line ->
+        val points = line.split("->").map(::stringToPoint)
+
+        points.windowed(2).forEach { pointPair ->
+            val (firstPoint, secondPoint) = pointPair
+
+            maxHeight = max(maxHeight, max(firstPoint.x, secondPoint.x))
+
+            for (x in min(firstPoint.x, secondPoint.x)..max(firstPoint.x, secondPoint.x)) {
+                for (y in min(firstPoint.y, secondPoint.y)..max(firstPoint.y, secondPoint.y)) {
+                    blockedPoints.add(Point(x, y))
+                }
+            }
+        }
+    }
+
+    return Pair(blockedPoints, maxHeight)
+}
+
+private fun stringToPoint(pointString: String): Point {
+    val (y, x) = pointString.split(",").map { it.trim().toInt() }
+
+    return Point(x, y)
+}
+
+private fun retriveCount(
+    blockedPoints: MutableSet<Point>,
+    maxHeight: Int,
+    abyss: Boolean
+): Int {
+    val possibleMoves = listOf(Pair(1, 0), Pair(1, -1), Pair(1, 1))
     val sandStack = Stack<Point>()
-    sandStack.add(sandPouringPoint)
+    sandStack.add(Point(0, 500))
+
+    var standingSand = 0
 
     while (!sandStack.empty()) {
         var currentPoint = sandStack.peek()
 
-        moveOutcome = getMoveOutcome(cave, sandStack, currentPoint, possibleMoves)
+        val moveOutcome = getMoveOutcome(blockedPoints, sandStack, maxHeight, currentPoint, possibleMoves)
 
         if (moveOutcome == -1) {
-            break
+            if (abyss) {
+                return standingSand
+            } else {
+                blockedPoints.add(currentPoint)
+                sandStack.pop()
+            }
         }
 
         if (moveOutcome == 1) {
-            cave[currentPoint.x][currentPoint.y] = 'o'
+            blockedPoints.add(currentPoint)
             standingSand += 1
             sandStack.pop()
         }
@@ -153,15 +94,21 @@ private fun retriveCount(cave: MutableList<MutableList<Char>>, possibleMoves: Li
     return standingSand
 }
 
-private fun getMoveOutcome(cave: List<List<Char>>, sandStack: Stack<Point>, currentPoint: Point, possibleMoves: List<Pair<Int, Int>>): Int {
+private fun getMoveOutcome(
+    blockedPoints: MutableSet<Point>,
+    sandStack: Stack<Point>,
+    maxHeight: Int,
+    currentPoint: Point,
+    possibleMoves: List<Pair<Int, Int>>
+): Int {
     for (move in possibleMoves) {
         val newPoint = Point(currentPoint.x + move.first, currentPoint.y + move.second)
 
-        if (newPoint.x >= cave.size || newPoint.y < 0 || newPoint.y >= cave[0].size) {
+        if (newPoint.x > maxHeight) {
             return -1
         }
 
-        if (cave[newPoint.x][newPoint.y] == '#' || cave[newPoint.x][newPoint.y] == 'o') {
+        if (blockedPoints.contains(newPoint)) {
             continue
         } else {
             sandStack.add(newPoint)
