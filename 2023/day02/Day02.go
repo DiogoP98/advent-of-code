@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"github.com/DiogoP98/advent-of-code/2023/utils"
 )
 
 var cubeCount = map[string]int{
@@ -109,7 +110,7 @@ func retriveSetColorCounts(set string) []colorPair {
 }
 
 func main() {
-	games, _ := readInput("Day02_test.txt")
+	games, _ := utils.readInput("Day02.txt")
 	part1(games)
 	part2(games)
 }
