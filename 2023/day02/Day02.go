@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
 	"github.com/DiogoP98/advent-of-code/2023/utils"
 )
 
@@ -110,7 +111,7 @@ func retriveSetColorCounts(set string) []colorPair {
 }
 
 func main() {
-	games, _ := utils.readInput("Day02.txt")
+	games, _ := utils.ReadInput("day02", "Day02.txt")
 	part1(games)
 	part2(games)
 }

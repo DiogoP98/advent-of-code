@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-func readInput(fileName string) ([]string, error) {
-	resourcesPath := filepath.Join(".", "resources")
+func ReadInput(folder string, fileName string) ([]string, error) {
+	resourcesPath := filepath.Join(folder, "resources")
 	filePath := filepath.Join(resourcesPath, fileName)
 
 	file, err := os.Open(filePath)
@@ -28,4 +28,26 @@ func readInput(fileName string) ([]string, error) {
 	}
 
 	return lines, nil
+}
+
+func BuildMatrixFromInput(input []string) [][]rune {
+	height := len(input)
+
+	if height == 0 {
+		return make([][]rune, 0)
+	}
+
+	matrix := make([][]rune, height)
+
+	width := len(input[0])
+
+	for i := 0; i < height; i++ {
+		matrix[i] = make([]rune, width)
+
+		for j, char := range input[i] {
+			matrix[i][j] = char
+		}
+	}
+
+	return matrix
 }
