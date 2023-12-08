@@ -51,3 +51,25 @@ func BuildMatrixFromInput(input []string) [][]rune {
 
 	return matrix
 }
+
+func LeastCommonMultiple(n1 int, n2 int) int {
+	var larger int
+
+	if n1 > n2 {
+		larger = n1
+	} else {
+		larger = n2
+	}
+
+	maxLCM := n1 * n2
+	lcm := larger
+
+	for lcm <= maxLCM {
+		if lcm%n1 == 0 && lcm%n2 == 0 {
+			return lcm
+		}
+		lcm += larger
+	}
+
+	return maxLCM
+}
