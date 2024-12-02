@@ -14,7 +14,7 @@ public class Day01 {
         System.out.println(part2(input));
     }
 
-    public static Integer part1(String input) {
+    public static Integer part1(final String input) {
         Lists lists = getLists(input);
 
         Collections.sort(lists.leftSide());
@@ -25,7 +25,7 @@ public class Day01 {
                 .sum();
     }
 
-    public static Integer part2(String input) {
+    public static Integer part2(final String input) {
         Lists lists = getLists(input);
 
         Map<Integer, Long> occurrences = lists.rightSide.stream()
@@ -37,7 +37,7 @@ public class Day01 {
         return lists.leftSide.stream().reduce(0, (a, b) -> a + b * occurrences.getOrDefault(b, 0L).intValue());
     }
 
-    private static Lists getLists(String input) {
+    private static Lists getLists(final String input) {
         List<Integer> leftSide = new ArrayList<>();
         List<Integer> rightSide = new ArrayList<>();
 
