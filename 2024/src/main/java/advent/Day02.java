@@ -18,11 +18,11 @@ public class Day02 {
     public static Integer part1(final String input) {
         int safeLevels = 0;
 
-        for(String level: input.lines().toList()) {
+        for (String level : input.lines().toList()) {
             List<String> numbers = Arrays.asList(level.split("\\s+"));
             List<Integer> differences = getLevelDifferences(numbers);
 
-            if(isSafeDifferences(differences)) {
+            if (isSafeDifferences(differences)) {
                 safeLevels += 1;
             }
         }
@@ -70,7 +70,7 @@ public class Day02 {
         return differences;
     }
 
-    private static boolean isSafeDifferences(List<Integer> differences) {
+    private static boolean isSafeDifferences(final List<Integer> differences) {
         float sign = Math.signum(differences.getFirst());
 
         for (int difference : differences) {
